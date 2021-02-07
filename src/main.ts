@@ -41,6 +41,7 @@ async function run(): Promise<void> {
       },
       process.env.GITHUB_TOKEN,
       process.env.SLACK_WEBHOOK_URL,
+      process.env.GIPHY_API_KEY,
     );
 
     switch (status) {

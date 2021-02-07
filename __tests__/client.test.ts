@@ -1,13 +1,28 @@
 process.env.GITHUB_WORKFLOW = 'PR Checks';
-process.env.GITHUB_SHA = 'cf194140294a4f469c694da7c4789dc05ae43ff2';
-process.env.GITHUB_REF = 'refs/heads/feature/19';
+process.env.GITHUB_SHA = '6cbff0c377bff4b39029b3d549b1b7eae62ac36a';
+process.env.GITHUB_REF = 'refs/heads/master';
 process.env.GITHUB_EVENT_NAME = 'push';
 process.env.GITHUB_RUN_ID = '133472587';
+process.env.GITHUB_REPOSITORY = 'HiberWorld/Hiber2';
 
 import { Client, With } from '../src/client';
 
 describe('TODO - Fix tests', () => {
-  it('TODO - Fix tests', async () => {});
+  it('TODO - Fix tests', async () => {
+    // const client = new Client({
+    //   status: 'failure',
+    //   channel: '',
+    //   icon_emoji: '',
+    //   icon_url: '',
+    //   mention: '',
+    //   only_mention_fail: '',
+    //   text: '',
+    //   title: '',
+    //   username: '',
+    // }, process.env.GITHUB_TOKEN, process.env.SLACK_WEBHOOK_URL, process.env.GIPHY_API_KEY);
+    // const failureMessage = await client.fail();
+    // await client.send(failureMessage);
+  });
 });
 
 /*

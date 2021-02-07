@@ -34,7 +34,9 @@
     "@actions/github": "^2.0.0",
     "@actions/io": "^1.0.1",
     "@actions/tool-cache": "^1.1.2",
+    "@giphy/js-fetch-api": "^2.1.0",
     "@slack/webhook": "^5.0.2",
+    "node-fetch": "^2.6.1",
     "semver": "^7.1.1"
   },
   "devDependencies": {

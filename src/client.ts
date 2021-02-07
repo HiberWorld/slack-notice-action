@@ -1,7 +1,11 @@
 // ref. https://github.com/actions/toolkit
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { GiphyFetch } from '@giphy/js-fetch-api';
 import { IncomingWebhook, IncomingWebhookSendArguments } from '@slack/webhook';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports
+(global as any).fetch = require('node-fetch');
 
 export interface With {
   status: string;
@@ -20,9 +24,15 @@ const groupMention = ['here', 'channel'];
 export class Client {
   private webhook: IncomingWebhook;
   private octokit?: github.GitHub;
+  private giphy?: GiphyFetch;
   private with: With;
 
-  constructor(props: With, token?: string, webhookUrl?: string) {
+  constructor(
+    props: With,
+    token?: string,
+    webhookUrl?: string,
+    giphyApiKey?: string,
+  ) {
     this.with = props;
 
     if (props.status !== 'custom') {
@@ -36,6 +46,10 @@ export class Client {
       throw new Error('Specify secrets.SLACK_WEBHOOK_URL');
     }
     this.webhook = new IncomingWebhook(webhookUrl);
+
+    if (giphyApiKey !== undefined) {
+      this.giphy = new GiphyFetch(giphyApiKey);
+    }
   }
 
   async success() {
@@ -49,6 +63,26 @@ export class Client {
   async fail() {
     const template = await this.payloadTemplate();
     template.attachments[0].color = 'danger';
+
+    if (this.giphy) {
+      const giphyResponse = await this.giphy.random({
+        limit: 1,
+        type: 'gifs',
+        tag: 'fail,fails,epic fail',
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (template.attachments as any[]).unshift({
+        blocks: [
+          {
+            type: 'image',
+            image_url: giphyResponse.data.images.fixed_height.url,
+            alt_text: 'inspiration',
+          },
+        ],
+      });
+    }
+
     template.text += this.mentionText(this.with.only_mention_fail);
     template.text += this.textFail;
 
