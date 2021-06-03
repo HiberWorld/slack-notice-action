@@ -1,6 +1,7 @@
 // ref. https://github.com/actions/toolkit
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { GitHub } from '@actions/github/lib/utils';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { IncomingWebhook, IncomingWebhookSendArguments } from '@slack/webhook';
 
@@ -23,7 +24,7 @@ const groupMention = ['here', 'channel'];
 
 export class Client {
   private webhook: IncomingWebhook;
-  private octokit?: github.GitHub;
+  private octokit?: InstanceType<typeof GitHub>;
   private giphy?: GiphyFetch;
   private with: With;
 
@@ -39,7 +40,7 @@ export class Client {
       if (token === undefined) {
         throw new Error('Specify secrets.GITHUB_TOKEN');
       }
-      this.octokit = new github.GitHub(token);
+      this.octokit = github.getOctokit(token);
     }
 
     if (webhookUrl === undefined) {
@@ -125,6 +126,55 @@ export class Client {
     return template;
   }
 
+  async commits() {
+    const commitsBlock = {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text:
+          '*Built commits by Thehink*\n`asd` - Fixes\n`asd` - Fixes\n`asd` - Fixes',
+      },
+    };
+
+    const customBlock = {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: '',
+      },
+    };
+
+    const contextBlock = {
+      type: 'context',
+      elements: [
+        {
+          type: 'mrkdwn',
+          text: '*Cat* has approved this message.',
+        },
+      ],
+    };
+
+    if (github.context.payload.commits.length) {
+      commitsBlock.text.text = `*Built ${github.context.payload.commits.length} commits by Thehink*`;
+
+      for (const commit of github.context.payload.commits) {
+        commitsBlock.text.text += `\n\`<https://github.com/HiberWorld/Hiber2/commit/${
+          commit.id
+        }|${commit.id.slice(0, 8)}>\` - ${commit.message}`;
+      }
+    }
+
+    contextBlock.elements[0].text = this.workflowLink;
+
+    customBlock.text.text = this.with.text;
+
+    const template = {
+      blocks: [commitsBlock, customBlock, contextBlock],
+    };
+
+    return template;
+  }
+
   async send(payload: string | IncomingWebhookSendArguments) {
     core.debug(JSON.stringify(github.context, null, 2));
     await this.webhook.send(payload);
@@ -157,7 +207,7 @@ export class Client {
     }
     const { sha } = github.context;
     const { owner, repo } = github.context.repo;
-    const commit = await this.octokit.repos.getCommit({
+    const commit = await this.octokit.rest.repos.getCommit({
       owner,
       repo,
       ref: sha,
@@ -183,7 +233,7 @@ export class Client {
       },
       {
         title: 'author',
-        value: `${author.name}<${author.email}>`,
+        value: `${author?.name}<${author?.email}>`,
         short: false,
       },
       {
@@ -256,7 +306,7 @@ export class Client {
     const m = message.match(/Merge pull request #(\d+)/);
     if (m) {
       const pullNumber = parseInt(m[1]);
-      const { data: pullRequest } = await this.octokit.pulls.get({
+      const { data: pullRequest } = await this.octokit.rest.pulls.get({
         owner,
         repo,
         pull_number: pullNumber,
