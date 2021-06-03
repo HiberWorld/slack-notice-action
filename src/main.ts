@@ -48,6 +48,9 @@ async function run(): Promise<void> {
       case 'success':
         await client.send(await client.success());
         break;
+      case 'fixed':
+        await client.send(await client.fixed());
+        break;
       case 'failure':
         await client.send(await client.fail());
         break;

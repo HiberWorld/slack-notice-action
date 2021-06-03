@@ -89,6 +89,34 @@ export class Client {
     return template;
   }
 
+  async fixed() {
+    const template = await this.payloadTemplate();
+    template.attachments[0].color = 'good';
+
+    if (this.giphy) {
+      const giphyResponse = await this.giphy.random({
+        limit: 1,
+        type: 'gifs',
+        tag: 'success,victory,win,epic win',
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (template.attachments as any[]).unshift({
+        blocks: [
+          {
+            type: 'image',
+            image_url: giphyResponse.data.images.fixed_height.url,
+            alt_text: 'inspiration',
+          },
+        ],
+      });
+    }
+
+    template.text += this.textFixed;
+
+    return template;
+  }
+
   async cancel() {
     const template = await this.payloadTemplate();
     template.attachments[0].color = 'warning';
@@ -169,6 +197,13 @@ export class Client {
         short: false,
       },
     ];
+  }
+
+  private get textFixed() {
+    if (this.with.text !== '') {
+      return this.with.text;
+    }
+    return 'A GitHub Action has been fixed';
   }
 
   private get textSuccess() {
