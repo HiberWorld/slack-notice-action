@@ -155,7 +155,7 @@ export class Client {
     };
 
     if (github.context.payload.commits.length) {
-      commitsBlock.text.text = `*Built ${github.context.payload.commits.length} commits by Thehink*`;
+      commitsBlock.text.text = `*Built ${github.context.payload.commits.length} commits by ${github.context.payload.pusher.name}*`;
 
       for (const commit of github.context.payload.commits) {
         commitsBlock.text.text += `\n\`<https://github.com/HiberWorld/Hiber2/commit/${
